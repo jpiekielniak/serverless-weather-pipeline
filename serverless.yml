@@ -1,0 +1,16 @@
+org: weatherpipeline
+app: weather-app
+service: serverless-weather-pipeline
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: eu-central-1
+
+
+functions:
+  hello:
+    handler: handler.hello
+
+plugins:
+  - serverless-python-requirements
