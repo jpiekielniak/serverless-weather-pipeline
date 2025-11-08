@@ -13,7 +13,6 @@ class City(Base):
     id = Column(Integer, primary_key=True)
     code = Column(String(2), nullable=False)
     name = Column(String(50), nullable=False)
-    timezone = Column(String, nullable=False)
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

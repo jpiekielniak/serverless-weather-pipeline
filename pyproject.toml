@@ -33,16 +33,3 @@ disallow_any_generics = true
 check_untyped_defs = true
 exclude = "src/app/alembic/env\\.py"
 
-[tool.flake8]
-max-line-length = 79
-exclude = '''
-/(
-    .venv
-  | build
-  | dist
-  | __pycache__
-  | src/app/alembic
-  | src/app/alembic/versions
-)/
-'''
-extend-ignore = ["E203", "W503"]
