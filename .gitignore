@@ -1,6 +1,7 @@
 # ========================
-# Python
+# 🐍 Python
 # ========================
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -11,13 +12,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-.env/
-.venv/
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 build/
 develop-eggs/
 dist/
@@ -33,6 +27,15 @@ var/
 .installed.cfg
 *.egg
 *.wheel
+
+# Virtual environments
+.env/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # PyInstaller
 *.manifest
@@ -56,6 +59,8 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+coverage_html/
+coverage.json
 
 # Translations
 *.mo
@@ -67,17 +72,17 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 instance/
-.webassets-cache
-.scrapy
+.webassets-cache/
+.scrapy/
 
-# Sphinx documentation
+# Documentation (e.g., Sphinx)
 docs/_build/
 
 # PyBuilder
 target/
 
 # Jupyter Notebook
-.ipynb_checkpoints
+.ipynb_checkpoints/
 
 # pyenv
 .python-version
@@ -87,27 +92,30 @@ Pipfile.lock
 poetry.lock
 __pypackages__/
 
-# ========================
-# Node.js
-# ========================
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-dist/
-.build/
-.cache/
-.eslintcache
-.npm
-.node_repl_history
-*.tgz
-.env
-.env.*.local
 
 # ========================
-# Terraform
+# 📦 AWS / Serverless / Deployment
 # ========================
+
+# Serverless framework
+.serverless/
+
+# Lambda / deployment packages
+package/
+*.zip
+*.tar.gz
+
+# AWS credentials / configs
+.aws/
+*.pem
+*.key
+*.crt
+
+
+# ========================
+# 🧱 Terraform
+# ========================
+
 **/.terraform/*
 *.tfstate
 *.tfstate.*
@@ -122,21 +130,80 @@ terraform.rc
 
 
 # ========================
-# Serverless
+# 💻 Node.js / Frontend
 # ========================
-.serverless/
+
+node_modules/
+dist/
+.build/
+.cache/
+.eslintcache
+.npm
+*.tgz
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*.local
+
 
 # ========================
-# IDEs and editors
+# 🧪 Development / Tooling
 # ========================
+
+# mypy / type check cache
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pre-commit cache
+.pre-commit-cache/
+.pre-commit/
+.pre-commit-config.yaml~
+.pre-commit-hooks.yaml~
+
+# Reports or CI/CD artifacts
+reports/
+test-results/
+artifacts/
+
+# Logs and temp output
+logs/
+*.log
+tmp/
+temp/
+__tmp__/
+
+
+# ========================
+# 🏗️ Database / Alembic
+# ========================
+
+src/app/alembic/__pycache__/
+src/app/alembic/versions/__pycache__/
+alembic/versions/*.pyc
+alembic/versions/__pycache__/
+
+
+# ========================
+# ⚙️ IDEs and Editors
+# ========================
+
 .vscode/
-.history/
 .idea/
+.history/
 *.iml
 
+
 # ========================
-# OS files
+# 💾 Operating Systems
 # ========================
+
 # macOS
 .DS_Store
 
@@ -148,7 +215,14 @@ Desktop.ini
 # Linux
 *~
 
-alembic/__pycache__/
-alembic/versions/__pycache__/
-alembic/*.pyc
-alembic/versions/*.pycions/__pycache__/
+
+# ========================
+# 🔒 Environment & Config Files
+# ========================
+
+.env.local
+.env.development
+.env.test
+.env.production
+*.env.backup
+.envrc
