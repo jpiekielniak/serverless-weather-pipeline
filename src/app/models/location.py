@@ -18,7 +18,6 @@ class Location(Base):
     )
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
-    timezone = Column(String)
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
