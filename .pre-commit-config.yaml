@@ -18,6 +18,10 @@ repos:
     rev: 7.1.1
     hooks:
       - id: flake8
+        exclude: >
+          (^src/app/alembic/)|
+          (^src/app/alembic/versions/)|
+          (^\.venv/)
         args: ["--max-line-length=79", "--extend-ignore=E203,W503"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -26,7 +30,8 @@ repos:
       - id: mypy
         additional_dependencies:
           - sqlalchemy>=2.0
-        exclude: 'src/app/alembic/env\.py'
+        args: [ "--config-file=pyproject.toml" ]
+
 
   - repo: https://github.com/zricethezav/gitleaks
     rev: v8.18.0
