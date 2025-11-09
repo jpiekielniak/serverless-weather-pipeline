@@ -2,20 +2,10 @@
 line-length = 79
 target-version = ['py312']
 skip-string-normalization = true
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.venv
-  | build
-  | dist
-  | migrations
-  | __pycache__
-)/
-'''
+
 
 [tool.isort]
 line_length = 79
-skip = ["src/app/alembic/env.py"]
 
 [tool.mypy]
 python_version = 3.12
@@ -31,5 +21,4 @@ disallow_untyped_calls = true
 disallow_untyped_decorators = true
 disallow_any_generics = true
 check_untyped_defs = true
-exclude = "src/app/alembic/env\\.py"
 

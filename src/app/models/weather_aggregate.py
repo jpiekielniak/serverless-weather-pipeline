@@ -43,4 +43,4 @@ class WeatherAggregate(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
-    city = relationship("City", back_populates="aggregates")
+    city = relationship("City", back_populates="weather_aggregates")

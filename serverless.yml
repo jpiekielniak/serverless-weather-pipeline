@@ -1,12 +1,14 @@
 org: weatherpipeline
 app: weather-app
 service: serverless-weather-pipeline
+
 frameworkVersion: "4"
 
 provider:
   name: aws
   runtime: python3.12
   region: eu-central-1
+  stage: ${opt:stage, 'dev'}
   lambdaHashingVersion: 20201221
   environment:
     API_URL: ${param:openweathermap-api-url}

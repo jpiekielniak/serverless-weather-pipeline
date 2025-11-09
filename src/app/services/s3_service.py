@@ -1,28 +1,40 @@
 import json
 import logging
-from typing import Any
+from datetime import datetime
+from typing import Any, Dict, Optional
+from zoneinfo import ZoneInfo
 
 import boto3
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
 
-def put_json(
-    bucket: str, key: str, payload: Any, content_type: str = "application/json"
-) -> None:
-    """Zapisuje obiekt JSON do S3 pod wskazanym kluczem.
+class S3Service:
+    def __init__(self, bucket_name: str):
+        self.bucket_name = bucket_name
 
-    Podnosi wyjątek jeśli operacja się nie powiedzie.
-    """
-    s3 = boto3.client("s3")
-    body = json.dumps(payload, ensure_ascii=False)
-    try:
-        s3.put_object(
-            Bucket=bucket, Key=key, Body=body, ContentType=content_type
+    def put_json(self, city: str, data: Dict[str, Any]) -> Optional[str]:
+        tz = ZoneInfo("Europe/Warsaw")
+        now = datetime.now(tz)
+        timestamp = now.isoformat(timespec="seconds").replace(":", "-")
+        key = (
+            f"raw/{city}/{now.year}/{now.month:02d}/{now.day:02d}/"
+            f"{city}_{timestamp}.json"
         )
-        logger.info("Zapisano obiekt do s3://%s/%s", bucket, key)
-    except Exception as e:
-        logger.error(
-            "Błąd podczas zapisu do S3 s3://%s/%s: %s", bucket, key, e
-        )
-        raise
+        s3 = boto3.client("s3")
+        body = json.dumps(data, ensure_ascii=False)
+        try:
+            s3.put_object(
+                Bucket=self.bucket_name,
+                Key=key,
+                Body=body,
+                ContentType="application/json",
+            )
+            logger.info(f"Saved object to s3://{self.bucket_name}/{key}")
+            return f"s3://{self.bucket_name}/{key}"
+        except ClientError as e:
+            logger.error(
+                f"Error saving object to s3://{self.bucket_name}/{key}: {e}"
+            )
+            return None
