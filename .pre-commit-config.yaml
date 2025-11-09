@@ -37,3 +37,13 @@ repos:
     rev: v8.18.0
     hooks:
       - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: eslint-serverless
+        name: Lint serverless.yml with ESLint
+        entry: npx eslint serverless.yml
+        language: system
+        types: [ yaml ]
+        files: ^serverless\.yml$
+        always_run: true

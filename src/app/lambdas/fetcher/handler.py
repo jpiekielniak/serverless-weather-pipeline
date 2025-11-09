@@ -1,58 +1,81 @@
 import json
 import logging
 import os
-from datetime import datetime, timezone
 from typing import Any, Dict
 
-import requests  # type: ignore[import-untyped]
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, configure_mappers, sessionmaker
 
-from ...services.s3_service import put_json
-from ...services.secrets_service import get_secret
+from src.app.models import Location
+from src.app.models.city import City
+from src.app.services.open_weather_map_api_client import WeatherService
+from src.app.services.s3_service import S3Service
+from src.app.services.secrets_manager_service import SecretsManagerService
 
-logger = logging.getLogger()
+configure_mappers()
+
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+def get_env_var(name: str) -> str:
+    value = os.environ.get(name)
+    if not value:
+        raise EnvironmentError(f"{name} environment variable not set")
+    return value
+
+
+def get_db_session() -> Session:
+    db_url = get_env_var("DATABASE_URL")
+    engine = create_engine(db_url)
+    SessionLocal = sessionmaker(bind=engine)
+    return SessionLocal()
+
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
-    city = event.get("city", "Warsaw")
+    bucket_name = get_env_var("RAW_BUCKET_NAME")
+    secret_name = get_env_var("SECRET_NAME_API")
+    api_url = get_env_var("API_URL")
 
-    bucket_name = os.environ.get("RAW_BUCKET_NAME")
-    if not bucket_name:
-        raise ValueError("RAW_BUCKET_NAME environment variable not set")
-
-    secret_name = os.environ.get("SECRET_NAME_API")
-    if not secret_name:
-        raise ValueError("SECRET_NAME_API environment variable not set")
-
-    secrets = get_secret(secret_name)
+    secret_manager_service = SecretsManagerService()
+    secrets = secret_manager_service.get_secret(secret_name)
     api_key = secrets.get("openweathermap")
+    if not api_key:
+        raise ValueError("OpenWeatherMap API key not found in secrets")
 
-    base_url = os.environ.get("API_URL")
-    url = f"{base_url}/weather?q={city}&appid={api_key}&units=metric&lang=en"
-    logger.info(f"Fetching weather for city: {city}")
+    weather_service = WeatherService(api_url, api_key)
+    s3_service = S3Service(bucket_name)
+
+    session = get_db_session()
+
+    results = []
 
     try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-
-        now = datetime.now(timezone.utc)
-        timestamp = now.strftime("%Y-%m-%dT%H-%M-%SZ")
-        key = (
-            f"raw/{city}/{now.year}/{now.month:02d}/{now.day:02d}/"
-            f"{city}_{timestamp}.json"
+        cities = (
+            session.query(City.name, Location.latitude, Location.longitude)
+            .join(City.location)
+            .all()
         )
 
-        put_json(bucket_name, key, data)
-        logger.info(f"Saved data into s3://{bucket_name}/{key}")
-
-        result = {"city": data["name"], "s3_path": f"s3://{bucket_name}/{key}"}
+        for name, lat, lon in cities:
+            try:
+                weather_data = weather_service.get_weather_by_coordinates(
+                    lat, lon
+                )
+                s3_path = s3_service.put_json(name, weather_data)
+                results.append({"city": name, "s3_path": s3_path})
+                logger.info(f"Weather for {name} saved to {s3_path}")
+            except Exception as e:
+                logger.error(f"Error fetching weather for {name}: {e}")
 
         return {
             "statusCode": 200,
-            "body": json.dumps(result, ensure_ascii=False),
+            "body": json.dumps(results, ensure_ascii=False),
         }
 
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error HTTP: {e}")
+    except Exception as e:
+        logger.error(f"Handler error: {e}")
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+
+    finally:
+        session.close()

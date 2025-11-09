@@ -19,3 +19,6 @@ class City(Base):
         nullable=False,
     )
     location = relationship("Location", back_populates="city", uselist=False)
+    weather_aggregates = relationship(
+        "WeatherAggregate", back_populates="city"
+    )

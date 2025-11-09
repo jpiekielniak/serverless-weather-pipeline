@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 
 from src.app.models.base import Base
@@ -12,7 +12,6 @@ class Location(Base):
 
     id = Column(Integer, primary_key=True)
     openweather_id = Column(Integer, unique=True)
-    name = Column(String, nullable=False)
     city_id = Column(
         Integer, ForeignKey("weather.cities.id"), unique=True, nullable=False
     )
