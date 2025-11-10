@@ -14,10 +14,34 @@ provider:
     API_URL: ${param:openweathermap-api-url}
     SECRET_NAME_API: ${param:secret-name-api}
     RAW_BUCKET_NAME: ${param:raw-bucket-name}
+    PROCESSED_BUCKET_NAME: ${param:processed-bucket-name}
+    SECRET_NAME_DB: ${param:secret-name-db}
 
 functions:
   fetchWeather:
     handler: src/app/lambdas/fetcher/handler.handler
+    timeout: 120
+    layers:
+      - !Ref CommonDependenciesLambdaLayer
+    events:
+      - schedule: cron(0 * * * ? *)
+
+
+  weatherDailyAggregator:
+    handler: src/app/lambdas/weather_daily_aggregator/handler.handler
+    timeout: 120
+    layers:
+      - !Ref CommonDependenciesLambdaLayer
+    events:
+      - schedule: cron(5 23 * * ? *)
+
+
+layers:
+  commonDependencies:
+    path: layers/common
+    description: Common Python dependencies for all weather lambdas
+    compatibleRuntimes:
+      - python3.12
 
 package:
   individually: true
@@ -25,7 +49,7 @@ package:
     - .venv/**
     - venv/**
     - env/**
-    - alembic/**
+    - src/app/alembic/**
     - .alembic/**
     - .terraform/**
     - terraform/**
@@ -49,3 +73,4 @@ package:
     - Pipfile*
     - poetry.lock
     - package*.json
+    - sql/**

@@ -226,3 +226,5 @@ Desktop.ini
 .env.production
 *.env.backup
 .envrc
+
+layers/

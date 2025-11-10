@@ -27,19 +27,7 @@ variable "trusted_principal_arn" {
   type        = string
 }
 
-variable "iam_policy_arns" {
-  description = "List of IAM policy ARNs to attach to the role"
-  type = list(string)
-  default = [
-    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-    "arn:aws:iam::aws:policy/AmazonS3FullAccess",
-    "arn:aws:iam::aws:policy/AmazonRDSFullAccess",
-    "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess",
-  ]
-}
-
-variable "db_secret_id" {
-  description = "Secrets Manager secret id containing DB credentials (JSON with username/password)"
-  type = string
-  default = "dev/db_credentials"
+variable "aws_account_id" {
+  description = "AWS account ID"
+  type        = string
 }
