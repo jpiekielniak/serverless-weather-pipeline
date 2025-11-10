@@ -7,6 +7,15 @@ resource "aws_s3_bucket" "weather_pipeline_raw_dev" {
   }
 }
 
+resource "aws_s3_bucket" "weather_pipeline_processed_dev" {
+  bucket = "weather-pipeline-processed-dev"
+
+  tags = {
+    Name = "weather-pipeline-processed-dev"
+    Env = "dev"
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "weather_pipeline_raw_dev_block" {
   bucket = aws_s3_bucket.weather_pipeline_raw_dev.id
 
@@ -16,6 +25,12 @@ resource "aws_s3_bucket_public_access_block" "weather_pipeline_raw_dev_block" {
   restrict_public_buckets = true
 }
 
-output "raw_bucket_arn" {
-  value = aws_s3_bucket.weather_pipeline_raw_dev.arn
+resource "aws_s3_bucket_public_access_block" "weather_pipeline_processed_dev_block" {
+  bucket = aws_s3_bucket.weather_pipeline_processed_dev.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
+

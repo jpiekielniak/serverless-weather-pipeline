@@ -1,10 +1,3 @@
-module "iam_role" {
-  source = "./modules/iam-role"
-  stage  = var.stage
-  policy_arns = var.iam_policy_arns
-  trusted_principal_arn = var.trusted_principal_arn
-}
-
 module "db" {
   source = "./modules/db/"
   stage = var.stage
@@ -12,4 +5,12 @@ module "db" {
 
 module "s3" {
   source = "./modules/s3"
+}
+
+module "iam" {
+  source         = "./modules/iam"
+
+  aws_account_id = var.aws_account_id
+  aws_region     = var.aws_region
+  stage          = var.stage
 }

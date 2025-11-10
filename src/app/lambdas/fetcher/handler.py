@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 from sqlalchemy import create_engine
@@ -25,8 +26,7 @@ def get_env_var(name: str) -> str:
     return value
 
 
-def get_db_session() -> Session:
-    db_url = get_env_var("DATABASE_URL")
+def get_db_session(db_url: str) -> Session:
     engine = create_engine(db_url)
     SessionLocal = sessionmaker(bind=engine)
     return SessionLocal()
@@ -34,19 +34,26 @@ def get_db_session() -> Session:
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     bucket_name = get_env_var("RAW_BUCKET_NAME")
-    secret_name = get_env_var("SECRET_NAME_API")
+    secret_name_api = get_env_var("SECRET_NAME_API")
+    secret_name_db = get_env_var("SECRET_NAME_DB")
     api_url = get_env_var("API_URL")
 
     secret_manager_service = SecretsManagerService()
-    secrets = secret_manager_service.get_secret(secret_name)
-    api_key = secrets.get("openweathermap")
+    secrets_api = secret_manager_service.get_secret(secret_name_api)
+    api_key = secrets_api.get("openweathermap")
     if not api_key:
         raise ValueError("OpenWeatherMap API key not found in secrets")
 
     weather_service = WeatherService(api_url, api_key)
     s3_service = S3Service(bucket_name)
 
-    session = get_db_session()
+    secrets_db = secret_manager_service.get_secret(secret_name_db)
+    db_url = secrets_db.get("db_url")
+
+    if not isinstance(db_url, str):
+        raise ValueError("Database URL (db_url) missing or invalid in secrets")
+
+    session = get_db_session(db_url)
 
     results = []
 
@@ -62,7 +69,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 weather_data = weather_service.get_weather_by_coordinates(
                     lat, lon
                 )
-                s3_path = s3_service.put_json(name, weather_data)
+                now = datetime.now(timezone.utc)
+                timestamp = now.isoformat(timespec="seconds").replace(":", "-")
+                key = (
+                    f"raw/{name}/{now.year}/{now.month:02d}/{now.day:02d}/"
+                    f"{name}_{timestamp}.json"
+                )
+
+                s3_path = s3_service.put_json(key, weather_data)
                 results.append({"city": name, "s3_path": s3_path})
                 logger.info(f"Weather for {name} saved to {s3_path}")
             except Exception as e:
