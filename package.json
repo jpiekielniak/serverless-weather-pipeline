@@ -9,12 +9,12 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
+    "eslint-plugin-yml": "^1.19.0",
     "eslint": "^9.39.1",
     "serverless-local-schedule": "^0.1.7",
+    "serverless-plugin-log-retention": "^2.1.0",
+    "serverless-prune-plugin": "^2.1.0",
     "serverless-python-requirements": "^6.1.2"
-  },
-  "dependencies": {
-    "eslint-plugin-yml": "^1.19.0"
   }
 }
