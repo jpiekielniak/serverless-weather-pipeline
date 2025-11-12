@@ -4,3 +4,8 @@ aiohttp
 pg8000
 aioboto3
 certifi
+pytest
+pytest-mock
+pytest-asyncio
+pytest-cov
+moto
