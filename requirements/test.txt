@@ -1,3 +1,0 @@
--r dev.txt
-moto>=5.0
-pytest-asyncio>=0.23

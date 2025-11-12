@@ -1,3 +1,6 @@
-requests
 sqlalchemy
+tenacity
+aiohttp
 pg8000
+aioboto3
+certifi
