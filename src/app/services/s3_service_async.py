@@ -9,10 +9,37 @@ logger = logging.getLogger(__name__)
 
 
 class AsyncS3Service:
+    """Asynchronous helper for common S3 operations (JSON objects).
+
+    This service provides convenience methods to put/get JSON objects and
+    list keys using aioboto3. Methods return native Python types and handle
+    ClientError logging.
+
+    Attributes:
+        bucket_name (str): Name of the S3 bucket to operate on.
+
+    Example:
+        async def main():
+            svc = AsyncS3Service("my-bucket")
+            await svc.put_json("path/to/key.json", {"a": 1})
+
+        # Then run: asyncio.run(main())
+    """
+
     def __init__(self, bucket_name: str):
         self.bucket_name = bucket_name
 
     async def put_json(self, key: str, data: Dict[str, Any]) -> Optional[str]:
+        """Upload a JSON-serializable mapping to S3 and return its s3 URI.
+
+        Args:
+            key (str): Object key within the bucket.
+            data (Dict[str, Any]): JSON-serializable object to store.
+
+        Returns:
+            Optional[str]: s3:// URI on success,
+            or None if the operation failed.
+        """
         body = json.dumps(data, ensure_ascii=False)
         try:
             async with aioboto3.Session().client("s3") as s3:
@@ -29,6 +56,17 @@ class AsyncS3Service:
             return None
 
     async def get_json(self, key: str) -> Dict[str, Any]:
+        """Retrieve and parse a JSON object stored in S3.
+
+        Args:
+            key (str): Object key within the bucket.
+
+        Returns:
+            Dict[str, Any]: Parsed JSON content.
+
+        Raises:
+            botocore.exceptions.ClientError: If the S3 API call fails.
+        """
         try:
             async with aioboto3.Session().client("s3") as s3:
                 response = await s3.get_object(
@@ -46,6 +84,14 @@ class AsyncS3Service:
             raise
 
     async def list_folders(self, prefix: str) -> List[str]:
+        """List folder prefixes under a given prefix in the bucket.
+
+        Args:
+            prefix (str): Prefix to search under.
+
+        Returns:
+            List[str]: Sorted list of folder prefix strings.
+        """
         folders = set()
         try:
             async with aioboto3.Session().client("s3") as s3:
@@ -61,6 +107,14 @@ class AsyncS3Service:
             return []
 
     async def list_objects(self, prefix: str) -> List[str]:
+        """List object keys under a given prefix in the bucket.
+
+        Args:
+            prefix (str): Prefix to search under.
+
+        Returns:
+            List[str]: List of object keys found under `prefix`.
+        """
         objects: List[str] = []
         try:
             async with aioboto3.Session().client("s3") as s3:

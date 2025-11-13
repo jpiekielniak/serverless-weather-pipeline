@@ -11,6 +11,21 @@ if TYPE_CHECKING:
 
 
 class Location(Base):
+    """Geographical location information associated with a City.
+
+    Represents a single location row containing latitude/longitude and an
+    optional external openweather id. The model is mapped to the
+    `weather.locations` table.
+
+    Attributes:
+        id (int): Primary key.
+        openweather_id (Optional[int]): External provider id.
+        city_id (int): Foreign key to `cities.id`.
+        latitude (float): Latitude in decimal degrees.
+        longitude (float): Longitude in decimal degrees.
+        created_at (datetime): Record creation timestamp (UTC).
+    """
+
     __tablename__ = "locations"
     __table_args__ = {"schema": "weather"}
 
