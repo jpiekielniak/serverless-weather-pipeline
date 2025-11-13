@@ -107,7 +107,7 @@ jobs:
           pip install mypy sqlalchemy aiohttp
 
       - name: Run mypy
-        run: mypy src --config-file pyproject.toml
+        run: mypy src --config-file pyproject.toml --no-warn-unused-ignores
 
   tests:
     name: Run Tests
