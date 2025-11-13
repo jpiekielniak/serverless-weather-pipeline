@@ -18,6 +18,20 @@ logger = get_logger(__name__)
 async def init_services() -> (
     Tuple[AsyncDBService, AsyncS3Service, WeatherService]
 ):
+    """Initialize and return core async services used by the handler.
+
+    This function reads configuration from environment variables and fetches
+    secret values from AWS Secrets Manager. It constructs the database,
+    storage and weather API services.
+
+    Returns:
+        Tuple[AsyncDBService, AsyncS3Service, WeatherService]:
+            A tuple containing initialized DB, S3 and weather API services.
+
+    Raises:
+        ValueError: If required secrets or environment variables are missing
+            or invalid (e.g., missing OpenWeatherMap API key or DB URL).
+    """
     bucket_name = get_env_var("RAW_BUCKET_NAME")
     secret_name_api = get_env_var("SECRET_NAME_API")
     secret_name_db = get_env_var("SECRET_NAME_DB")
@@ -47,6 +61,20 @@ async def init_services() -> (
 async def store_weather_in_s3(
     s3_service: AsyncS3Service, city_name: str, weather_data: Dict[str, Any]
 ) -> Optional[str]:
+    """Persist a single city's weather JSON to S3 and return its URI.
+
+    The object key is timestamped and organized by city and date so that files
+    are easy to list and aggregate later.
+
+    Args:
+        s3_service (AsyncS3Service): Initialized S3 helper.
+        city_name (str): Human-readable city name used in the S3 key.
+        weather_data (Dict[str, Any]): JSON-serializable weather payload.
+
+    Returns:
+        Optional[str]: s3:// URI of the stored object on success,
+        None on failure.
+    """
     now = datetime.now(timezone.utc)
     timestamp = now.isoformat(timespec="seconds").replace(":", "-")
     key = (
@@ -64,6 +92,17 @@ async def process_city_weather(
     weather_service: WeatherService,
     s3_service: AsyncS3Service,
 ) -> Dict[str, Any]:
+    """Fetch and store weather for a single city.
+
+    Args:
+        city (Tuple[str, float, float]): Tuple of (name, latitude, longitude).
+        weather_service (WeatherService): Client for OpenWeatherMap API.
+        s3_service (AsyncS3Service): S3 helper used to store raw JSON.
+
+    Returns:
+        Dict[str, Any]: A result mapping containing at least the `city` name
+        and either `s3_path` on success or `error` on failure.
+    """
     name, lat, lon = city
     try:
         weather_data = await weather_service.get_weather_by_coordinates(
@@ -81,6 +120,19 @@ async def process_all_cities(
     weather_service: WeatherService,
     s3_service: AsyncS3Service,
 ) -> List[Dict[str, Any]]:
+    """Process a batch of cities concurrently.
+
+    This function schedules per-city tasks and awaits them as a group.
+
+    Args:
+        cities (list[tuple[str, float, float]]): List of (name, lat, lon).
+        weather_service (WeatherService): Client used by each task.
+        s3_service (AsyncS3Service): S3 helper used by each task.
+
+    Returns:
+        List[Dict[str, Any]]: Per-city results; each contains `city` and
+        either `s3_path` or `error`.
+    """
     tasks = [
         process_city_weather(city, weather_service, s3_service)
         for city in cities
@@ -90,6 +142,18 @@ async def process_all_cities(
 
 
 async def async_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    """Asynchronous AWS Lambda handler entrypoint.
+
+    Fetches the list of cities from the database, retrieves current weather
+    for each city and stores raw JSON files in S3.
+
+    Args:
+        event (Dict[str, Any]): Lambda event payload (unused here).
+        context (Any): Lambda context object (unused here).
+
+    Returns:
+        Dict[str, Any]: Lambda proxy response with `statusCode` and JSON `body`
+    """
     try:
         db_service, s3_service, weather_service = await init_services()
 
@@ -116,4 +180,13 @@ async def async_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    """Synchronous Lambda entrypoint that bridges to the async handler.
+
+    Args:
+        event (Dict[str, Any]): Lambda event payload.
+        context (Any): Lambda context object.
+
+    Returns:
+        Dict[str, Any]: Lambda proxy response as produced by `async_handler`.
+    """
     return asyncio.run(async_handler(event, context))

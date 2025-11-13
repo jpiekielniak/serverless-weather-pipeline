@@ -19,6 +19,26 @@ if TYPE_CHECKING:
 
 
 class WeatherAggregate(Base):
+    """Daily aggregated weather measurements for a City.
+
+    Stores daily aggregate metrics such as min/max/avg temperature, humidity,
+    precipitation sum and average wind speed. A unique constraint prevents
+    duplicate aggregates for the same city and date.
+
+    Attributes:
+        id (int): Primary key.
+        city_id (int): Foreign key to cities.id.
+        date (date): Aggregation date.
+        temp_min (float): Minimum temperature observed.
+        temp_max (float): Maximum temperature observed.
+        temp_avg (float): Average temperature.
+        humidity_avg (float): Average humidity.
+        precipitation_sum (float): Total precipitation for the day.
+        wind_speed_avg (float): Average wind speed.
+        readings_count (int): Number of readings used to compute aggregates.
+        created_at (datetime): Creation timestamp (UTC).
+    """
+
     __tablename__ = "weather_aggregates"
     __table_args__ = (
         UniqueConstraint(

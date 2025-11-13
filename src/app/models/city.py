@@ -14,6 +14,22 @@ if TYPE_CHECKING:
 
 
 class City(Base):
+    """Represents a city and its relationships (location and aggregates).
+
+    The City model holds basic identifying information and links to a single
+    `Location` and multiple `WeatherAggregate` records. It maps to the
+    `weather.cities` table.
+
+    Attributes:
+        id (int): Primary key.
+        code (str): Country code or short identifier (2 chars).
+        name (str): City name.
+        created_at (datetime): Record creation timestamp (UTC).
+        location (Location): One-to-one relationship to Location.
+        weather_aggregates (List[WeatherAggregate]): One-to-many
+        relationship to daily aggregates.
+    """
+
     __tablename__ = "cities"
     __table_args__ = {"schema": "weather"}
 
