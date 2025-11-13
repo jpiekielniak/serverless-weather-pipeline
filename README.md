@@ -25,8 +25,8 @@ A production-ready, serverless data pipeline that fetches current weather data f
 - Database: PostgreSQL on RDS. SQLAlchemy models live under `src/app/models/`.
 
 Cron (UTC by default in AWS):
-- fetchWeather: `cron(0 * * * ? *)` (co godzina)
-- weatherDailyAggregator: `cron(5 23 * * ? *)` (codziennie 23:05)
+- fetchWeather: `cron(0 * * * ? *)` 
+- weatherDailyAggregator: `cron(5 23 * * ? *)` 
 
 ## Repository layout
 
@@ -238,6 +238,3 @@ The following environment variables are provided to Lambdas via `serverless.yml`
 - Flake8 E501 line too long:
   - Project enforces 79-char lines (see `pyproject.toml`). Wrap docstrings and strings accordingly.
 
-## License
-
-MIT (or your preferred license). Update this section as needed.
