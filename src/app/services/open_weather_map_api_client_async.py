@@ -38,11 +38,13 @@ class WeatherService:
     ) -> Dict[str, Any]:
         url = self.build_weather_url(lat, lon)
         ssl_context = ssl.create_default_context(cafile=certifi.where())
+        timeout = aiohttp.ClientTimeout(total=10)
 
         async with aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(ssl=ssl_context)
+            connector=aiohttp.TCPConnector(ssl=ssl_context),
+            timeout=timeout,
         ) as session:
-            async with session.get(url, timeout=10) as response:
+            async with session.get(url) as response:
                 response.raise_for_status()
                 data = await response.json()
 

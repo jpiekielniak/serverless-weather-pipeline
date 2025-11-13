@@ -21,4 +21,5 @@ disallow_untyped_calls = true
 disallow_untyped_decorators = true
 disallow_any_generics = true
 check_untyped_defs = true
+exclude = "(alembic|migrations|build|dist|.venv|.pytest_cache|.mypy_cache)"
 

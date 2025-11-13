@@ -30,6 +30,7 @@ repos:
       - id: mypy
         additional_dependencies:
           - sqlalchemy>=2.0
+          - aiohttp
         args: [ "--config-file=pyproject.toml" ]
 
 
