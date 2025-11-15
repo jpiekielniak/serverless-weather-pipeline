@@ -1,0 +1,98 @@
+org: weatherpipeline
+app: weather-app
+service: serverless-weather-pipeline
+
+frameworkVersion: "4"
+
+plugins:
+  - serverless-prune-plugin
+  - serverless-plugin-log-retention
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: eu-central-1
+  stage: ${opt:stage, 'dev'}
+  lambdaHashingVersion: 20201221
+  environment:
+    API_URL: ${param:openweathermap-api-url}
+    SECRET_NAME_API: ${param:secret-name-api}
+    RAW_BUCKET_NAME: ${param:raw-bucket-name}
+    PROCESSED_BUCKET_NAME: ${param:processed-bucket-name}
+    SECRET_NAME_DB: ${param:secret-name-db}
+
+custom:
+  prune:
+    automatic: true
+    number: 3
+    includeLayers: true
+
+  schedules:
+    fetchWeather:
+      rate: "cron(0 * * * ? *)"
+      enabled: ${opt:enableFetch, true}
+      name: fetchWeather-${self:provider.stage}
+    weatherDailyAggregator:
+      rate: "cron(5 23 * * ? *)"
+      enabled: ${opt:enableDaily, true}
+      name: weatherDailyAggregator-${self:provider.stage}
+
+  logRetentionInDays: 30
+
+functions:
+  fetchWeather:
+    handler: src/app/lambdas/fetcher/handler.handler
+    timeout: 120
+    layers:
+      - !Ref CommonDependenciesLambdaLayer
+    events:
+      - schedule: ${self:custom.schedules.fetchWeather.rate}
+
+
+  weatherDailyAggregator:
+    handler: src/app/lambdas/weather_daily_aggregator/handler.handler
+    timeout: 120
+    layers:
+      - !Ref CommonDependenciesLambdaLayer
+    events:
+      - schedule: ${self:custom.schedules.weatherDailyAggregator.rate}
+
+
+layers:
+  commonDependencies:
+    path: layers/common
+    description: Common Python dependencies for all weather lambdas
+    compatibleRuntimes:
+      - python3.12
+
+package:
+  individually: true
+  exclude:
+    - .venv/**
+    - venv/**
+    - env/**
+    - src/app/alembic/**
+    - .alembic/**
+    - .terraform/**
+    - terraform/**
+    - node_modules/**
+    - tests/**
+    - __pycache__/**
+    - .pytest_cache/**
+    - .mypy_cache/**
+    - .tox/**
+    - .nox/**
+    - .DS_Store
+    - .idea/**
+    - .vscode/**
+    - .serverless/**
+    - dist/**
+    - build/**
+    - tmp/**
+    - .env
+    - .env.*
+    - README.md
+    - Pipfile*
+    - poetry.lock
+    - package*.json
+    - sql/**

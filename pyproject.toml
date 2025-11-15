@@ -1,0 +1,25 @@
+[tool.black]
+line-length = 79
+target-version = ['py312']
+skip-string-normalization = true
+
+
+[tool.isort]
+line_length = 79
+
+[tool.mypy]
+python_version = 3.12
+plugins = ["sqlalchemy.ext.mypy.plugin"]
+strict = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_return_any = true
+explicit_package_bases = true
+no_implicit_optional = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_any_generics = true
+check_untyped_defs = true
+exclude = "(alembic|migrations|build|dist|.venv|.pytest_cache|.mypy_cache)"
+

@@ -1,0 +1,50 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args: ["--line-length=79", "--skip-string-normalization"]
+        additional_dependencies: [ ]
+
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--line-length=79", "--profile=black"]
+        exclude: 'src/app/alembic/env\.py'
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        exclude: >
+          (^src/app/alembic/)|
+          (^src/app/alembic/versions/)|
+          (^\.venv/)
+        args: ["--max-line-length=79", "--extend-ignore=E203,W503"]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - sqlalchemy>=2.0
+          - aiohttp
+        args: [ "--config-file=pyproject.toml" ]
+
+
+  - repo: https://github.com/zricethezav/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: eslint-serverless
+        name: Lint serverless.yml with ESLint
+        entry: npx eslint serverless.yml
+        language: system
+        types: [ yaml ]
+        files: ^serverless\.yml$
+        always_run: true
