@@ -37,12 +37,15 @@ custom:
       enabled: ${opt:enableDaily, true}
       name: weatherDailyAggregator-${self:provider.stage}
 
-  logRetentionInDays: 30
+  logRetentionByStage:
+    dev: 7
+    prod: 30
+  logRetentionInDays: ${self:custom.logRetentionByStage.${self:provider.stage}, 30}
 
 functions:
   fetchWeather:
     handler: src/app/lambdas/fetcher/handler.handler
-    timeout: 120
+    timeout: 180
     layers:
       - !Ref CommonDependenciesLambdaLayer
     events:
@@ -51,7 +54,7 @@ functions:
 
   weatherDailyAggregator:
     handler: src/app/lambdas/weather_daily_aggregator/handler.handler
-    timeout: 120
+    timeout: 900
     layers:
       - !Ref CommonDependenciesLambdaLayer
     events:
